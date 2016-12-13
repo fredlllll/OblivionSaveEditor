@@ -56,6 +56,13 @@ namespace OblivionSaveEditor
             return LoadBinaryCompatible<_REGION>(stream);
         }
 
+        public static ChangeRecord LoadChangeRecord(Stream stream)
+        {
+            ChangeRecord cr = new ChangeRecord();
+            cr.Load(stream);
+            return cr;
+        }
+
         public static string LoadString(Stream stream, int length)
         {
             byte[] buffer = new byte[length];
@@ -94,9 +101,11 @@ namespace OblivionSaveEditor
 
         public static string LoadBZString(Stream stream)
         {
-            var tmp = LoadBString(stream);
-            stream.ReadByte();//0 termination
-            return tmp;
+            byte len = (byte)stream.ReadByte();
+            byte[] buffer = new byte[len];
+            stream.Read(buffer, 0, len);
+            var encoding = Encoding.GetEncoding("Windows-1252");
+            return encoding.GetString(buffer, 0, len - 1);//-1 to get rid of 0 terminator
         }
 
         public static T LoadBinaryCompatible<T>(Stream stream) where T : struct
